@@ -1,0 +1,33 @@
+# Excluir ejemplos y tests
+examples/
+tests/
+test/
+
+# Archivos de desarrollo
+*.log
+*.tmp
+.DS_Store
+Thumbs.db
+
+# IDEs
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# Build artifacts
+node_modules/
+coverage/
+.nyc_output/
+
+# Configuración local
+.env
+.env.local
+.env.*.local
+
+# Git
+.git/
+.gitignore
+
+# Documentos de desarrollo (mantener solo README.md)
+EXAMPLES.md 

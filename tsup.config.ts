@@ -6,4 +6,12 @@ export default defineConfig({
   dts: true,
   external: ["react", "react-dom"],
   clean: true,
+  minify: true,
+  treeshake: true,
+  splitting: true,
+  target: "es2018",
+  sourcemap: true,
+  esbuildOptions(options) {
+    options.jsx = "automatic";
+  },
 });

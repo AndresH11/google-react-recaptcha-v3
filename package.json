@@ -1,11 +1,28 @@
 {
   "name": "google-react-recaptcha-v3",
-  "version": "1.0.0",
-  "description": "React component for Google reCAPTCHA",
-  "main": "index.js",
+  "version": "2.0.0",
+  "description": "React component for Google reCAPTCHA v3 with advanced features and optimizations",
+  "main": "./dist/index.js",
+  "module": "./dist/index.mjs",
+  "types": "./dist/index.d.ts",
+  "typings": "./dist/index.d.ts",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.mjs",
+      "require": "./dist/index.js"
+    }
+  },
+  "files": ["dist"],
   "scripts": {
     "build": "tsup",
-    "prepublishOnly": "npm run build"
+    "build:watch": "tsup --watch",
+    "dev": "tsup --watch",
+    "prepublish": "npm run build",
+    "prepublishOnly": "npm run build",
+    "typecheck": "tsc --noEmit",
+    "examples": "npm run build && cd examples && npm run dev",
+    "examples:build": "npm run build && cd examples && npm run build"
   },
   "repository": {
     "type": "git",
@@ -18,21 +35,22 @@
   "keywords": [
     "react",
     "recaptcha",
-    "invisible",
-    "checkbox",
-    "google",
+    "recaptcha-v3",
+    "google-recaptcha",
     "typescript",
-    "recaptcha",
-    "google recaptcha",
-    "invisible recaptcha",
-    "recaptcha v3",
-    "react recaptcha",
-    "form validation",
-    "bot protection",
-    "react component",
-    "recaptcha hook",
-    "recaptcha typescript"],
-  "author": "Andres Felipe Hernandez Aldana",
+    "react-component",
+    "form-validation",
+    "bot-protection",
+    "trusted-types",
+    "performance",
+    "optimized",
+    "csp",
+    "security"
+  ],
+  "author": {
+    "name": "Andres Felipe Hernandez Aldana",
+    "url": "https://github.com/AndresH11"
+  },
   "license": "MIT",
   "peerDependencies": {
     "react": ">=17",
@@ -47,5 +65,12 @@
     "@types/react-dom": "^19.1.5",
     "tsup": "^8.5.0",
     "typescript": "^5.8.3"
+  },
+  "sideEffects": false,
+  "publishConfig": {
+    "access": "public"
+  },
+  "engines": {
+    "node": ">=16"
   }
 }

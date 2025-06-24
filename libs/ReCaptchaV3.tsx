@@ -5,14 +5,26 @@ import {
 } from "./interfaces/reCaptchaV3.interface";
 
 const RecaptchaV3 = forwardRef<RecaptchaV3Ref, RecaptchaV3Props>(
-  ({ siteKey, action, hl, onVerify, onError }, ref) => {
+  (
+    {
+      siteKey,
+      action,
+      hl,
+      onVerify,
+      onError,
+      trustedTypes = false,
+      timeout = 5000,
+      autoExecute = false,
+    },
+    ref
+  ) => {
     const [isReady, setIsReady] = useState(false);
 
     useImperativeHandle(ref, () => ({
       execute: async () => {
         try {
-          if (grecaptcha && isReady) {
-            const token = await grecaptcha.execute(siteKey, { action });
+          if (typeof window !== "undefined" && window.grecaptcha && isReady) {
+            const token = await window.grecaptcha.execute(siteKey, { action });
             onVerify?.(token);
             return token;
           }
@@ -22,44 +34,93 @@ const RecaptchaV3 = forwardRef<RecaptchaV3Ref, RecaptchaV3Props>(
           return null;
         }
       },
+      isReady: () => isReady,
+      reset: () => {
+        if (typeof window !== "undefined" && window.grecaptcha?.reset) {
+          window.grecaptcha.reset();
+        }
+      },
     }));
 
     useEffect(() => {
       const scriptId = "recaptcha-v3-script";
+      const trustedTypesParam = trustedTypes ? "&trustedtypes=true" : "";
       const src = `https://www.google.com/recaptcha/api.js?render=${siteKey}${
         hl ? `&hl=${hl}` : ""
-      }`;
+      }${trustedTypesParam}`;
 
       if (!document.getElementById(scriptId)) {
         const script = document.createElement("script");
         script.id = scriptId;
         script.src = src;
         script.async = true;
+        script.defer = true;
+
+        const timeoutId = setTimeout(() => {
+          onError?.(new Error(`Script loading timeout after ${timeout}ms`));
+        }, timeout);
+
         script.onload = () => {
-          grecaptcha.ready(() => {
-            setIsReady(true);
-          });
-        };
-        script.onerror = () => {
-          onError?.(new Error("Failed to load reCAPTCHA script"));
-        };
-        document.body.appendChild(script);
-      } else {
-        // Si ya está cargado, esperar a que esté listo
-        const checkReady = setInterval(() => {
-          if (grecaptcha) {
-            grecaptcha.ready(() => {
+          clearTimeout(timeoutId);
+          if (typeof window !== "undefined" && window.grecaptcha) {
+            window.grecaptcha.ready(() => {
               setIsReady(true);
-              clearInterval(checkReady);
+              // Auto-ejecutar si está habilitado
+              if (autoExecute && onVerify && window.grecaptcha) {
+                window.grecaptcha.execute(siteKey, { action }).then(onVerify);
+              }
             });
           }
-        }, 300);
-        return () => clearInterval(checkReady);
+        };
+
+        script.onerror = () => {
+          clearTimeout(timeoutId);
+          onError?.(new Error("Failed to load reCAPTCHA script"));
+        };
+
+        document.head.appendChild(script);
+      } else {
+        // Si ya está cargado, verificar si está listo
+        if (typeof window !== "undefined" && window.grecaptcha) {
+          window.grecaptcha.ready(() => {
+            setIsReady(true);
+            if (autoExecute && onVerify && window.grecaptcha) {
+              window.grecaptcha.execute(siteKey, { action }).then(onVerify);
+            }
+          });
+        } else {
+          // Polling para verificar disponibilidad
+          const checkReady = setInterval(() => {
+            if (typeof window !== "undefined" && window.grecaptcha) {
+              window.grecaptcha.ready(() => {
+                setIsReady(true);
+                if (autoExecute && onVerify && window.grecaptcha) {
+                  window.grecaptcha.execute(siteKey, { action }).then(onVerify);
+                }
+              });
+              clearInterval(checkReady);
+            }
+          }, 100);
+
+          // Cleanup después del timeout
+          setTimeout(() => clearInterval(checkReady), timeout);
+        }
       }
-    }, [siteKey, hl, onError]);
+    }, [
+      siteKey,
+      hl,
+      onError,
+      trustedTypes,
+      timeout,
+      autoExecute,
+      action,
+      onVerify,
+    ]);
 
     return null;
   }
 );
+
+RecaptchaV3.displayName = "RecaptchaV3";
 
 export default RecaptchaV3;
