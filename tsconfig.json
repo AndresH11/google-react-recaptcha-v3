@@ -11,5 +11,6 @@
     "strict": true,
     "skipLibCheck": true
   },
-  "include": ["libs", "global.d.ts"]
+  "include": ["libs", "global.d.ts"],
+  "exclude": ["documentation"]
 }

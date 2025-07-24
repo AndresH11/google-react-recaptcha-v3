@@ -18,6 +18,8 @@ export interface RecaptchaV3Ref {
   isReady: () => boolean;
   /** Reset the reCAPTCHA instance */
   reset: () => void;
+  /** Get the current loading state */
+  isLoading: () => boolean;
 }
 
 export interface RecaptchaV3Response {

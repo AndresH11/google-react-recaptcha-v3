@@ -1,10 +1,52 @@
-import { forwardRef, useEffect, useImperativeHandle, useState } from "react";
+import { forwardRef, useImperativeHandle } from "react";
+import { useReCaptcha } from "./hooks/useReCaptcha";
 import {
   RecaptchaV3Props,
   RecaptchaV3Ref,
 } from "./interfaces/reCaptchaV3.interface";
 
-const RecaptchaV3 = forwardRef<RecaptchaV3Ref, RecaptchaV3Props>(
+/**
+ * Componente ReCAPTCHA v3 con arquitectura limpia
+ *
+ * Este componente es una capa de presentación delgada que delega toda la lógica
+ * al hook personalizado useRecaptcha, siguiendo principios de arquitectura limpia.
+ *
+ * @example
+ * ```tsx
+ * // Uso básico
+ * <RecaptchaV3
+ *   siteKey="your-site-key"
+ *   action="page_view"
+ *   onVerify={(token) => console.log(token)}
+ * />
+ *
+ * // Con auto-ejecución para analytics
+ * <RecaptchaV3
+ *   siteKey="your-site-key"
+ *   action="analytics"
+ *   autoExecute={true}
+ *   onVerify={(token) => sendAnalytics(token)}
+ * />
+ *
+ * // Con referencia para ejecución manual
+ * const recaptchaRef = useRef<RecaptchaV3Ref>(null);
+ *
+ * const handleSubmit = async () => {
+ *   const token = await recaptchaRef.current?.execute();
+ *   if (token) {
+ *     // Enviar formulario con token
+ *   }
+ * };
+ *
+ * <ReCaptchaV3
+ *   ref={recaptchaRef}
+ *   siteKey="your-site-key"
+ *   action="form_submit"
+ *   onVerify={(token) => setFormToken(token)}
+ * />
+ * ```
+ */
+const ReCaptchaV3 = forwardRef<RecaptchaV3Ref, RecaptchaV3Props>(
   (
     {
       siteKey,
@@ -18,109 +60,35 @@ const RecaptchaV3 = forwardRef<RecaptchaV3Ref, RecaptchaV3Props>(
     },
     ref
   ) => {
-    const [isReady, setIsReady] = useState(false);
-
-    useImperativeHandle(ref, () => ({
-      execute: async () => {
-        try {
-          if (typeof window !== "undefined" && window.grecaptcha && isReady) {
-            const token = await window.grecaptcha.execute(siteKey, { action });
-            onVerify?.(token);
-            return token;
-          }
-          throw new Error("reCAPTCHA not ready");
-        } catch (err) {
-          onError?.(err);
-          return null;
-        }
-      },
-      isReady: () => isReady,
-      reset: () => {
-        if (typeof window !== "undefined" && window.grecaptcha?.reset) {
-          window.grecaptcha.reset();
-        }
-      },
-    }));
-
-    useEffect(() => {
-      const scriptId = "recaptcha-v3-script";
-      const trustedTypesParam = trustedTypes ? "&trustedtypes=true" : "";
-      const src = `https://www.google.com/recaptcha/api.js?render=${siteKey}${
-        hl ? `&hl=${hl}` : ""
-      }${trustedTypesParam}`;
-
-      if (!document.getElementById(scriptId)) {
-        const script = document.createElement("script");
-        script.id = scriptId;
-        script.src = src;
-        script.async = true;
-        script.defer = true;
-
-        const timeoutId = setTimeout(() => {
-          onError?.(new Error(`Script loading timeout after ${timeout}ms`));
-        }, timeout);
-
-        script.onload = () => {
-          clearTimeout(timeoutId);
-          if (typeof window !== "undefined" && window.grecaptcha) {
-            window.grecaptcha.ready(() => {
-              setIsReady(true);
-              // Auto-ejecutar si está habilitado
-              if (autoExecute && onVerify && window.grecaptcha) {
-                window.grecaptcha.execute(siteKey, { action }).then(onVerify);
-              }
-            });
-          }
-        };
-
-        script.onerror = () => {
-          clearTimeout(timeoutId);
-          onError?.(new Error("Failed to load reCAPTCHA script"));
-        };
-
-        document.head.appendChild(script);
-      } else {
-        // Si ya está cargado, verificar si está listo
-        if (typeof window !== "undefined" && window.grecaptcha) {
-          window.grecaptcha.ready(() => {
-            setIsReady(true);
-            if (autoExecute && onVerify && window.grecaptcha) {
-              window.grecaptcha.execute(siteKey, { action }).then(onVerify);
-            }
-          });
-        } else {
-          // Polling para verificar disponibilidad
-          const checkReady = setInterval(() => {
-            if (typeof window !== "undefined" && window.grecaptcha) {
-              window.grecaptcha.ready(() => {
-                setIsReady(true);
-                if (autoExecute && onVerify && window.grecaptcha) {
-                  window.grecaptcha.execute(siteKey, { action }).then(onVerify);
-                }
-              });
-              clearInterval(checkReady);
-            }
-          }, 100);
-
-          // Cleanup después del timeout
-          setTimeout(() => clearInterval(checkReady), timeout);
-        }
-      }
-    }, [
+    // Toda la lógica delegada al hook personalizado
+    const { isReady, execute, reset, isLoading } = useReCaptcha({
       siteKey,
+      action,
       hl,
-      onError,
       trustedTypes,
       timeout,
       autoExecute,
-      action,
       onVerify,
-    ]);
+      onError,
+    });
 
+    // Exposición de la API pública a través del ref
+    useImperativeHandle(
+      ref,
+      () => ({
+        execute,
+        isReady: () => isReady,
+        reset,
+        isLoading: () => isLoading,
+      }),
+      [execute, isReady, reset, isLoading]
+    );
+
+    // Componente sin renderizado visual (headless)
     return null;
   }
 );
 
-RecaptchaV3.displayName = "RecaptchaV3";
+ReCaptchaV3.displayName = "ReCaptchaV3";
 
-export default RecaptchaV3;
+export default ReCaptchaV3;

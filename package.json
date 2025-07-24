@@ -1,6 +1,6 @@
 {
   "name": "google-react-recaptcha-v3",
-  "version": "2.0.0",
+  "version": "2.0.1",
   "description": "React component for Google reCAPTCHA v3 with advanced features and optimizations",
   "main": "./dist/index.js",
   "module": "./dist/index.mjs",
