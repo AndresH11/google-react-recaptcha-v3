@@ -1,4 +1,8 @@
 import { TRANSACTIONAL_ACTIONS } from "../enums/TRANSACTIONAL_ACTIONS";
+import {
+  getActionValidationError,
+  isValidAction,
+} from "../utils/actionValidator";
 
 export interface RecaptchaConfig {
   siteKey: string;
@@ -20,7 +24,7 @@ export interface RecaptchaServiceInterface {
   validateAction(action: string): { isValid: boolean; warning?: string };
 }
 
-class RecaptchaService implements RecaptchaServiceInterface {
+export class RecaptchaService implements RecaptchaServiceInterface {
   private grecaptcha: any = null;
 
   constructor(grecaptchaInstance?: any) {
@@ -66,6 +70,15 @@ class RecaptchaService implements RecaptchaServiceInterface {
   }
 
   validateAction(action: string): { isValid: boolean; warning?: string } {
+    // 1) Validación de formato (per docs oficiales).
+    if (!isValidAction(action)) {
+      return {
+        isValid: false,
+        warning: getActionValidationError(action) ?? undefined,
+      };
+    }
+
+    // 2) Warning operacional para acciones transaccionales con autoExecute.
     const isTransactional = Object.values(TRANSACTIONAL_ACTIONS).includes(
       action as TRANSACTIONAL_ACTIONS
     ) as boolean;

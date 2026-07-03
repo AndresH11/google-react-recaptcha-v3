@@ -9,8 +9,9 @@
     "declarationDir": "dist",
     "outDir": "dist",
     "strict": true,
-    "skipLibCheck": true
+    "skipLibCheck": true,
+    "types": ["vitest/globals", "@testing-library/jest-dom", "node"]
   },
-  "include": ["libs", "global.d.ts"],
-  "exclude": ["documentation"]
+  "include": ["libs", "global.d.ts", "tests", "vitest.config.ts"],
+  "exclude": ["node_modules", "dist", "documentation", "examples"]
 }

@@ -19,11 +19,10 @@ export {
 export {
   createRecaptchaService,
   recaptchaService,
-} from "./services/RecaptchaService";
-export type {
-  RecaptchaConfig,
-  RecaptchaExecutionResult,
-  RecaptchaServiceInterface,
+  RecaptchaService,
+  type RecaptchaConfig,
+  type RecaptchaExecutionResult,
+  type RecaptchaServiceInterface,
 } from "./services/RecaptchaService";
 
 // Utilidades para casos avanzados
@@ -38,5 +37,34 @@ export type {
   ScriptLoadResult,
 } from "./utils/scriptLoader";
 
+// Validador de nombres de acción (formato exigido por Google).
+export {
+  isValidAction,
+  getActionValidationError,
+  VALID_ACTION_REGEX,
+} from "./utils/actionValidator";
+
+// Verificación server-side de tokens.
+// Llama a https://www.google.com/recaptcha/api/siteverify y devuelve un
+// resultado discriminado (success | failure) fácil de consumir.
+export {
+  verifyRecaptchaToken,
+  RECAPTCHA_VERIFY_URL,
+  RECAPTCHA_INTERNAL_ERROR_CODES,
+  type VerifyRecaptchaTokenOptions,
+  type VerifyRecaptchaTokenResult,
+  type VerifyRecaptchaTokenSuccess,
+  type VerifyRecaptchaTokenFailure,
+  type RecaptchaSiteVerifyResponse,
+} from "./utils/verifyRecaptchaToken";
+
 // Constantes públicas
 export { TRANSACTIONAL_ACTIONS } from "./enums/TRANSACTIONAL_ACTIONS";
+
+// Umbrales de score recomendados por Google para reCAPTCHA v3.
+export {
+  DEFAULT_SCORE_THRESHOLD,
+  SCORE_THRESHOLDS,
+  type ScoreThresholdKey,
+  type ScoreThresholdValue,
+} from "./constants/SCORE_THRESHOLDS";

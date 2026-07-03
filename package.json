@@ -1,6 +1,6 @@
 {
   "name": "google-react-recaptcha-v3",
-  "version": "2.0.1",
+  "version": "2.0.2",
   "description": "React component for Google reCAPTCHA v3 with advanced features and optimizations",
   "main": "./dist/index.js",
   "module": "./dist/index.mjs",
@@ -13,14 +13,22 @@
       "require": "./dist/index.js"
     }
   },
-  "files": ["dist"],
+  "files": [
+    "dist"
+  ],
   "scripts": {
     "build": "tsup",
     "build:watch": "tsup --watch",
     "dev": "tsup --watch",
-    "prepublish": "npm run build",
-    "prepublishOnly": "npm run build",
     "typecheck": "tsc --noEmit",
+    "test": "vitest",
+    "test:run": "vitest run",
+    "test:watch": "vitest watch",
+    "test:coverage": "vitest run --coverage",
+    "test:ui": "vitest --ui",
+    "test:npm-smoke": "node scripts/npm-smoke.mjs",
+    "prepublish": "npm run build",
+    "prepublishOnly": "npm run typecheck && npm run test:run && npm run build && npm run test:npm-smoke",
     "examples": "npm run build && cd examples && npm run dev",
     "examples:build": "npm run build && cd examples && npm run build"
   },
@@ -57,20 +65,29 @@
     "react-dom": ">=17"
   },
   "dependencies": {
-    "react": "^19.1.0",
-    "react-dom": "^19.1.0"
+    "react": "^19.2.7",
+    "react-dom": "^19.2.7"
   },
   "devDependencies": {
-    "@types/react": "^19.1.4",
-    "@types/react-dom": "^19.1.5",
-    "tsup": "^8.5.0",
-    "typescript": "^5.8.3"
+    "@testing-library/jest-dom": "^6.9.1",
+    "@testing-library/react": "^16.3.2",
+    "@testing-library/user-event": "^14.6.1",
+    "@types/node": "^26.1.0",
+    "@types/react": "^19.2.17",
+    "@types/react-dom": "^19.2.3",
+    "@vitest/coverage-v8": "^4.1.9",
+    "@vitest/ui": "4.1.9",
+    "happy-dom": "^20.10.6",
+    "jsdom": "^29.1.1",
+    "tsup": "^8.5.1",
+    "typescript": "^5.8.3",
+    "vitest": "^4.1.9"
   },
   "sideEffects": false,
   "publishConfig": {
     "access": "public"
   },
   "engines": {
-    "node": ">=16"
+    "node": ">=18"
   }
 }
