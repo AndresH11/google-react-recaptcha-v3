@@ -31,3 +31,5 @@ coverage/
 
 # Documentos de desarrollo (mantener solo README.md)
 EXAMPLES.md 
+
+.npmrc
